@@ -6,6 +6,7 @@ All notable changes to PyWALL are documented in this file. The project follows [
 
 ### Documentation
 
+- Removed obsolete links and metadata for the retired personal project website.
 - Added a complete Italian translation of the main README with reciprocal language-navigation links.
 - Linked the 2026 *Archeologia e Calcolatori* paper and clarified that it documents the 2025 DynUNet/TopoMortar implementation, whereas PyWALL v13 uses Meta's official SAM 2 backend.
 

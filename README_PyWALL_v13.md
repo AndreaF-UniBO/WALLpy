@@ -2,7 +2,7 @@
 
 PyWALL v13 è una versione alpha pubblica dell'applicazione desktop per la segmentazione assistita di immagini murarie e la produzione di maschere PNG e contorni DXF.
 
-[Sito del progetto](https://andreaf-unibo.github.io/) · [Repository](https://github.com/AndreaF-UniBO/PyWALL) · [Release v0.13.0](https://github.com/AndreaF-UniBO/PyWALL/releases/tag/v0.13.0)
+[Repository](https://github.com/AndreaF-UniBO/PyWALL) · [Release v0.13.0](https://github.com/AndreaF-UniBO/PyWALL/releases/tag/v0.13.0)
 
 ## Cosa contiene
 

@@ -4,7 +4,7 @@
 
 PyWALL is a desktop application for assisting masonry-image segmentation and the production of archaeological drawing outputs. Version 13 is the current public alpha release.
 
-[Project website](https://andreaf-unibo.github.io/) · [Source repository](https://github.com/AndreaF-UniBO/PyWALL) · [Release v0.13.0](https://github.com/AndreaF-UniBO/PyWALL/releases/tag/v0.13.0)
+[Source repository](https://github.com/AndreaF-UniBO/PyWALL) · [Release v0.13.0](https://github.com/AndreaF-UniBO/PyWALL/releases/tag/v0.13.0)
 
 The application provides two independent segmentation workflows:
 
