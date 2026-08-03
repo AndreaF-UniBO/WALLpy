@@ -54,9 +54,13 @@ checkpoints/*
 !checkpoints/LEGGIMI.txt
 !checkpoints/SHA256SUMS
 
-# Local test photographs; publish only after rights review
+# Local test photographs; only explicitly authorized files are published
 samples/*
 !samples/README.md
+!samples/SHA256SUMS
+!samples/071.png
+!samples/080.png
+!samples/input_04.png
 
 # Local pre-release material with unknown redistribution provenance
 test_sam2/

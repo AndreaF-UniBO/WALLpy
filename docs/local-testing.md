@@ -57,7 +57,7 @@ checkpoints/sam2.1_hiera_base_plus.pt
 SHA-256 A2345AEDE8715AB1D5D31B4A509FB160C5A4AF1970F199D9054CCFB746C004C5
 ```
 
-The complete local bundle passed 12 tests with the real SAM 2 integration test enabled. After the six non-redistributable photographs were removed, the publication candidate passed 11 tests in 9.70 seconds; the single skipped check only verifies optional local photographs. The real SAM 2 test passed using a generated synthetic image.
+The current sample-publication candidate passed 12 tests with the optional SAM 2 test skipped. With the official checkpoint enabled, all 13 tests passed in 17.95 seconds. The suite verifies that the three published photographs exist, remain readable, and contain no EXIF metadata; pixel equality with the protected originals was checked separately before staging. The real SAM 2 test uses a generated synthetic image.
 
 ## Manual validation
 
@@ -67,6 +67,7 @@ The user launched the application locally and confirmed the interactive workflow
 
 - [x] `.venv` excluded
 - [x] Meta checkpoint excluded and reproducible download documented
-- [x] Six local test photographs excluded because redistribution rights are undocumented
+- [x] Three author-owned photographs published after explicit authorization and metadata removal
+- [x] Three remaining local photographs excluded because publication has not been authorized
 - [x] Repository URLs and public screenshot updated for PyWALL v13
 - [x] Final test suite rerun on the publication candidate

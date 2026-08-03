@@ -7,3 +7,7 @@ PyWALL uses separately installed third-party packages and an optional model
 backend. Their notices and upstream license information are documented in
 THIRD_PARTY_NOTICES.md. No third-party model weights are distributed with
 the public PyWALL source distribution.
+
+The photographs published under samples/ are copyright 2026 Andrea Fiorini.
+They are not licensed under Apache-2.0. See samples/README.md for the terms
+authorized by the copyright holder.

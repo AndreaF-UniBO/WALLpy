@@ -80,7 +80,7 @@ or:
 
 ## Minimal workflow
 
-1. Select **Carica Immagine** and choose a JPEG or PNG image that you are entitled to process. A local validation bundle may also contain test files under `samples/`.
+1. Select **Carica Immagine** and choose one of the published files under `samples/`, or another JPEG or PNG image that you are entitled to process.
 2. Select **K-Means** for the core workflow or **SAM 2** for the official Meta model.
 3. Adjust the filter controls and, where appropriate, correct the mask manually.
 4. Inspect the contours and binary mask.
@@ -94,7 +94,7 @@ The internal binary mask uses `255` for masonry units and `0` for mortar. PyWALL
 
 ## Samples
 
-Six masonry photographs were used for local validation, but their redistribution rights have not been confirmed and the image files are therefore not included in this public repository. See [samples/README.md](samples/README.md) for the policy and instructions for supplying local test images.
+The repository includes three photographs taken by Andrea Fiorini and expressly authorized for distribution as PyWALL test inputs: `071.png`, `080.png`, and `input_04.png`. Their embedded metadata was removed before publication without changing the pixels. Three other local validation images remain excluded because publication has not been authorized. See [samples/README.md](samples/README.md) for the separate copyright terms.
 
 ## SAM 2 model handling
 
@@ -114,7 +114,7 @@ PyWALL uses only the official [`facebookresearch/sam2`](https://github.com/faceb
 PyWALL_v13.py             Main Tkinter desktop application
 sam2_segmentation.py      Official Meta SAM 2 adapter
 checkpoints/              Local Meta checkpoint and verification information
-samples/                  Policy file; user-supplied test photographs stay local
+samples/                  Three authorized examples and their copyright terms
 scripts/                  Windows setup, download, test and launch helpers
 tests/                    Unit, GUI and optional model smoke tests
 docs/                     Local verification notes
@@ -127,4 +127,4 @@ PyWALL is authored by Andrea Fiorini, Department of History and Cultures, Alma M
 
 ## License
 
-PyWALL source code is licensed under the [Apache License 2.0](LICENSE). Third-party packages and the Meta SAM 2 model remain subject to their upstream terms; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and [NOTICE](NOTICE).
+PyWALL source code is licensed under the [Apache License 2.0](LICENSE). The photographs in `samples/` are not covered by that licence and remain copyright Andrea Fiorini under the terms stated in [samples/README.md](samples/README.md). Third-party packages and the Meta SAM 2 model remain subject to their upstream terms; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and [NOTICE](NOTICE).

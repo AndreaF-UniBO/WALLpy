@@ -67,7 +67,7 @@ Il test ordinario non carica il modello. Dopo avere scaricato il checkpoint, puo
 
 - Meta raccomanda WSL/Ubuntu per SAM 2 su Windows. La configurazione nativa fornita qui deve quindi essere verificata su questo computer.
 - I pesi vengono scaricati esclusivamente dallo script esplicito e verificati con SHA-256.
-- Le sei fotografie usate per la validazione locale non sono distribuite nel repository perché i relativi diritti non sono stati documentati. La cartella `samples` può ospitare immagini dell'utente e resta esclusa da Git.
+- `071.png`, `080.png` e `input_04.png` sono fotografie di Andrea Fiorini autorizzate alla pubblicazione come input di prova; i metadati incorporati sono stati rimossi. Le altre tre immagini della validazione locale restano escluse. Consulta `samples/README.md` per i termini separati dal codice Apache-2.0.
 - Gli output automatici sono supporti operativi e richiedono sempre controllo archeologico esperto.
 
 Vedi anche le [istruzioni per il checkpoint](checkpoints/README.md), il [rapporto dei test locali](docs/local-testing.md) e la [licenza](LICENSE).
