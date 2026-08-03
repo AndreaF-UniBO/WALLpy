@@ -12,6 +12,7 @@ import sam2_segmentation
 
 
 ROOT = Path(__file__).resolve().parents[1]
+PUBLISHED_SAMPLES = ("071.png", "080.png", "input_04.png")
 
 
 @pytest.fixture(scope="module")
@@ -153,6 +154,15 @@ def test_local_samples_are_readable_when_present():
         with Image.open(path) as image:
             rgb = image.convert("RGB")
             assert rgb.width > 0 and rgb.height > 0
+
+
+def test_published_samples_are_present_and_metadata_free():
+    for name in PUBLISHED_SAMPLES:
+        path = ROOT / "samples" / name
+        assert path.is_file()
+        with Image.open(path) as image:
+            assert image.format == "PNG"
+            assert len(image.getexif()) == 0
 
 
 def test_public_runtime_has_no_legacy_dl_or_ultralytics_backend():

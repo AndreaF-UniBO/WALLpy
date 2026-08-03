@@ -2,6 +2,16 @@
 
 All notable changes to PyWALL are documented in this file. The project follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and intends to use [Semantic Versioning](https://semver.org/) for public releases.
 
+## [Unreleased]
+
+### Added
+
+- Three author-owned masonry photographs (`071.png`, `080.png`, and `input_04.png`) as reproducible sample inputs.
+
+### Security
+
+- Removed embedded EXIF, location, device, date, and colour-profile metadata from the published sample copies while preserving their pixels.
+
 ## [0.13.0] - 2026-08-03
 
 ### Added
