@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use WALLpy in research, please cite the software and the exact version or commit used."
+title: "WALLpy"
+type: software
+version: 0.1.0
+authors:
+  - family-names: "Fiorini"
+    given-names: "Andrea"
+    email: "andrea.fiorini6@unibo.it"
+    affiliation: "Department of History and Cultures, Alma Mater Studiorum - University of Bologna"
+repository-code: "https://github.com/AndreaF-UniBO/WALLpy"
+url: "https://andreaf-unibo.github.io/"
+keywords:
+  - archaeology of architecture
+  - digital archaeology
+  - image segmentation
+  - masonry
+

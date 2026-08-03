@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wallpy"
+version = "0.1.0"
+description = "Desktop tools for masonry-image segmentation and archaeological drawing support."
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [
+  { name = "Andrea Fiorini", email = "andrea.fiorini6@unibo.it" },
+]
+keywords = [
+  "archaeology of architecture",
+  "digital archaeology",
+  "image segmentation",
+  "masonry",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Win32 (MS Windows)",
+  "Intended Audience :: Science/Research",
+  "Natural Language :: Italian",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Topic :: Scientific/Engineering :: Image Processing",
+]
+dependencies = [
+  "numpy>=1.24",
+  "Pillow>=9.5",
+  "opencv-python>=4.8",
+  "scikit-learn>=1.3",
+  "scikit-image>=0.21",
+  "scipy>=1.10",
+  "ttkbootstrap>=1.10",
+  "ezdxf>=1.1",
+]
+
+[project.optional-dependencies]
+sam = ["ultralytics>=8.3"]
+dev = ["pytest>=8.0", "PyYAML>=6.0"]
+
+[project.scripts]
+wallpy = "WALLpy_v12:main"
+
+[project.urls]
+Homepage = "https://andreaf-unibo.github.io/"
+Repository = "https://github.com/AndreaF-UniBO/WALLpy"
+Documentation = "https://github.com/AndreaF-UniBO/WALLpy#readme"
+Issues = "https://github.com/AndreaF-UniBO/WALLpy/issues"
+
+[tool.setuptools]
+py-modules = ["WALLpy_v12", "sam2_segmentation"]
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+testpaths = ["tests"]

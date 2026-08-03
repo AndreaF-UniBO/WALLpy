@@ -1,0 +1,13 @@
+Cartella per i checkpoint SAM 2 (necessari solo con il backend ufficiale 'sam2').
+
+Scarica qui uno di questi file (il default dell'app è base_plus):
+
+  sam2.1_hiera_tiny.pt       https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_tiny.pt
+  sam2.1_hiera_small.pt      https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_small.pt
+  sam2.1_hiera_base_plus.pt  https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_base_plus.pt
+  sam2.1_hiera_large.pt      https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_large.pt
+
+Se usi il backend 'ultralytics' (pip install ultralytics) questa cartella
+non serve: i pesi vengono scaricati automaticamente.
+
+Vedi README_WALLpy_v12.md per i dettagli.
