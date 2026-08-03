@@ -121,6 +121,14 @@ docs/                     Local verification notes
 pyproject.toml            Packaging and dependency metadata
 ```
 
+## Associated publication
+
+The genesis of PyWALL, its earlier architecture, the validation methodology, and its archaeological field application are described in:
+
+> Fiorini, A. (2026). *Munsell Soil Finder e PyWALL: strumenti per la documentazione cromatica e il rilievo dei paramenti murari in archeologia*. **Archeologia e Calcolatori**, 37.1, 255–276. [Article page and PDF download](https://www.archcalc.cnr.it/journal/articles/1498) · [DOI: 10.19282/ac.37.1.2026.13](https://doi.org/10.19282/ac.37.1.2026.13)
+
+AI software evolves unusually quickly in comparison with scholarly publication timelines, so an article may already describe a partly superseded implementation when it appears. This paper was published in August 2026 but documents a version of PyWALL developed during 2025, before SAM 2 was integrated. It therefore describes K-Means and a pre-trained DynUNet obtained through TopoMortar. The current PyWALL v13 retains K-Means, removes that earlier DynUNet/TopoMortar route, and uses Meta's official SAM 2 backend instead. The paper remains the scientific reference for the project's genesis, validation design, and archaeological field test; this repository is the authoritative source for current installation and functionality.
+
 ## Citation and authorship
 
 PyWALL is authored by Andrea Fiorini, Department of History and Cultures, Alma Mater Studiorum – University of Bologna. See [CITATION.cff](CITATION.cff) for machine-readable citation metadata.

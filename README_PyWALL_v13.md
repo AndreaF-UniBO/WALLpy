@@ -63,6 +63,14 @@ Il test ordinario non carica il modello. Dopo avere scaricato il checkpoint, puo
 .\scripts\test_local.ps1 -Sam2
 ```
 
+## Pubblicazione associata
+
+La genesi di PyWALL, l'architettura della versione precedente, il metodo di validazione e il test d'impiego in campo archeologico sono descritti in:
+
+> Fiorini, A. (2026). *Munsell Soil Finder e PyWALL: strumenti per la documentazione cromatica e il rilievo dei paramenti murari in archeologia*. **Archeologia e Calcolatori**, 37.1, 255–276. [Pagina dell'articolo e download del PDF](https://www.archcalc.cnr.it/journal/articles/1498) · [DOI: 10.19282/ac.37.1.2026.13](https://doi.org/10.19282/ac.37.1.2026.13)
+
+Gli strumenti di intelligenza artificiale evolvono con una rapidità insolita rispetto ai tempi della pubblicazione scientifica; un articolo può quindi descrivere un'implementazione già in parte superata al momento dell'uscita. Il paper è stato pubblicato nell'agosto 2026, ma documenta una versione di PyWALL sviluppata nel 2025, prima dell'integrazione di SAM 2. Descrive pertanto K-Means e una DynUNet pre-addestrata ottenuta tramite TopoMortar. PyWALL v13 mantiene K-Means, elimina quel precedente percorso DynUNet/TopoMortar e utilizza invece il backend ufficiale Meta SAM 2. Il paper resta il riferimento scientifico per la genesi del progetto, il disegno della validazione e il test archeologico sul campo; questo repository è il riferimento aggiornato per installazione e funzionalità correnti.
+
 ## Note importanti
 
 - Meta raccomanda WSL/Ubuntu per SAM 2 su Windows. La configurazione nativa fornita qui deve quindi essere verificata su questo computer.
