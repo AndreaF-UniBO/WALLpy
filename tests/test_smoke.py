@@ -14,69 +14,70 @@ import sam2_segmentation
 ROOT = Path(__file__).resolve().parents[1]
 
 
+@pytest.fixture(scope="module")
+def gui_app():
+    root = tk.Tk()
+    root.withdraw()
+    app = PyWALL_v13.PyWALLApp(root)
+    root.update_idletasks()
+    try:
+        yield root, app
+    finally:
+        root.destroy()
+
+
 def test_main_modules_import_and_version_is_consistent():
     assert PyWALL_v13.__version__ == "0.13.0"
     assert callable(PyWALL_v13.main)
     assert callable(sam2_segmentation.segment_wall_sam2)
 
 
-def test_gui_branding_and_public_segmentation_actions():
-    root = tk.Tk()
-    root.withdraw()
-    try:
-        app = PyWALL_v13.PyWALLApp(root)
-        root.update_idletasks()
-        assert root.title() == "PyWALL v13 – Segmentazione murature"
-        assert app.process_button.cget("text") == "🧮 K-Means"
-        assert app.process_sam2_button.cget("text") == "🪄 SAM 2"
-        assert not hasattr(app, "process_dl_button")
-        assert not hasattr(app, "run_dl_segmentation")
-    finally:
-        root.destroy()
+def test_gui_branding_and_public_segmentation_actions(gui_app):
+    root, app = gui_app
+    assert root.title() == "PyWALL v13 – Segmentazione murature"
+    assert app.process_button.cget("text") == "🧮 K-Means"
+    assert app.process_sam2_button.cget("text") == "🪄 SAM 2"
+    assert not hasattr(app, "process_dl_button")
+    assert not hasattr(app, "run_dl_segmentation")
 
 
-def test_png_and_dxf_exports_create_readable_files(monkeypatch, tmp_path):
-    root = tk.Tk()
-    root.withdraw()
+def test_png_and_dxf_exports_create_readable_files(gui_app, monkeypatch, tmp_path):
+    _, app = gui_app
     errors = []
-    try:
-        app = PyWALL_v13.PyWALLApp(root)
-        mask = np.zeros((32, 32), dtype=np.uint8)
-        mask[8:24, 8:24] = PyWALL_v13.BRICK_MASK_VALUE
-        app.cleaned_mask_auto = mask
-        app.processed_pil_image = Image.new("RGB", (32, 32), "white")
+    mask = np.zeros((32, 32), dtype=np.uint8)
+    mask[8:24, 8:24] = PyWALL_v13.BRICK_MASK_VALUE
+    app.cleaned_mask_auto = mask
+    app.processed_pil_image = Image.new("RGB", (32, 32), "white")
 
-        monkeypatch.setattr(PyWALL_v13.messagebox, "showinfo", lambda *args, **kwargs: None)
-        monkeypatch.setattr(PyWALL_v13.messagebox, "showerror", lambda *args, **kwargs: errors.append(args))
+    monkeypatch.setattr(PyWALL_v13.messagebox, "showinfo", lambda *args, **kwargs: None)
+    monkeypatch.setattr(PyWALL_v13.messagebox, "showerror", lambda *args, **kwargs: errors.append(args))
 
-        assert app._find_and_prepare_contour_images()
-        assert app.brick_contours
+    assert app._find_and_prepare_contour_images()
+    assert app.brick_contours
 
-        dxf_path = tmp_path / "contours.dxf"
-        monkeypatch.setattr(
-            PyWALL_v13.filedialog,
-            "asksaveasfilename",
-            lambda **kwargs: str(dxf_path),
-        )
-        app._export_dxf()
-        assert dxf_path.is_file() and dxf_path.stat().st_size > 0
-        document = PyWALL_v13.ezdxf.readfile(dxf_path)
-        assert len(document.modelspace().query("LWPOLYLINE")) >= 1
+    dxf_path = tmp_path / "contours.dxf"
+    monkeypatch.setattr(
+        PyWALL_v13.filedialog,
+        "asksaveasfilename",
+        lambda **kwargs: str(dxf_path),
+    )
+    app._export_dxf()
+    assert dxf_path.is_file() and dxf_path.stat().st_size > 0
+    document = PyWALL_v13.ezdxf.readfile(dxf_path)
+    assert len(document.modelspace().query("LWPOLYLINE")) >= 1
 
-        png_path = tmp_path / "mask.png"
-        monkeypatch.setattr(
-            PyWALL_v13.filedialog,
-            "asksaveasfilename",
-            lambda **kwargs: str(png_path),
-        )
-        app._export_binary_mask_png()
-        with Image.open(png_path) as exported:
-            assert exported.mode == "L"
-            assert exported.size == (32, 32)
+    png_path = tmp_path / "mask.png"
+    monkeypatch.setattr(
+        PyWALL_v13.filedialog,
+        "asksaveasfilename",
+        lambda **kwargs: str(png_path),
+    )
+    app._export_binary_mask_png()
+    with Image.open(png_path) as exported:
+        assert exported.mode == "L"
+        assert exported.size == (32, 32)
 
-        assert not errors
-    finally:
-        root.destroy()
+    assert not errors
 
 
 def test_mask_fusion_filters_candidates_by_relative_area():
