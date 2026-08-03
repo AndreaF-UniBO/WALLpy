@@ -1,3 +1,5 @@
+🇮🇹 [Leggi in italiano](LEGGIMI.md) | 🇬🇧 [Read in English](README.md)
+
 # PyWALL v13
 
 PyWALL is a desktop application for assisting masonry-image segmentation and the production of archaeological drawing outputs. Version 13 is the current public alpha release.
