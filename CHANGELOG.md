@@ -4,6 +4,10 @@ All notable changes to PyWALL are documented in this file. The project follows [
 
 ## [Unreleased]
 
+### Documentation
+
+- Linked the 2026 *Archeologia e Calcolatori* paper and clarified that it documents the 2025 DynUNet/TopoMortar implementation, whereas PyWALL v13 uses Meta's official SAM 2 backend.
+
 ### Added
 
 - Three author-owned masonry photographs (`071.png`, `080.png`, and `input_04.png`) as reproducible sample inputs.
