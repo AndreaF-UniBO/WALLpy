@@ -48,7 +48,6 @@ dev = ["pytest>=8.0", "PyYAML>=6.0"]
 pywall = "PyWALL_v13:main"
 
 [project.urls]
-Homepage = "https://andreaf-unibo.github.io/"
 Repository = "https://github.com/AndreaF-UniBO/PyWALL"
 Documentation = "https://github.com/AndreaF-UniBO/PyWALL#installation"
 Issues = "https://github.com/AndreaF-UniBO/PyWALL/issues"
