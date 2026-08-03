@@ -1,0 +1,61 @@
+# Python environments and caches
+.venv/
+venv/
+env/
+**/__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Packaging and build output
+build/
+dist/
+*.egg-info/
+pip-wheel-metadata/
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+
+# IDE, operating-system, logs, and temporary files
+.idea/
+.vscode/
+*.code-workspace
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log
+*.tmp
+*.temp
+~$*
+
+# Generated application output
+output/
+outputs/
+exports/
+results/
+
+# Datasets and model weights are acquired separately
+data/
+datasets/
+models/
+*.pt
+*.pth
+*.ckpt
+*.onnx
+checkpoints/*
+!checkpoints/README.md
+!checkpoints/LEGGIMI.txt
+
+# Local pre-release material with unknown redistribution provenance
+test_sam2/
+
+# Local safety backup and separately versioned website checkout
+.release-backup-*/
+site-repository/
+
