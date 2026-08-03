@@ -79,6 +79,7 @@ def test_readme_relative_links_resolve():
         "checkpoints/README.md",
         "docs/legacy-deep-learning.md",
         "CITATION.cff",
+        "THIRD_PARTY_NOTICES.md",
     ]
 
     readme = (root / "README.md").read_text(encoding="utf-8")

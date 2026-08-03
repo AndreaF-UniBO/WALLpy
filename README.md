@@ -53,6 +53,8 @@ For the optional Ultralytics SAM 2 backend:
 python -m pip install ".[sam]"
 ```
 
+Ultralytics is licensed upstream under AGPL-3.0. Installing this optional extra adds a separately licensed component to the runtime environment; review the [third-party notices](THIRD_PARTY_NOTICES.md) and the upstream terms before use or redistribution.
+
 For development and tests:
 
 ```powershell
@@ -152,3 +154,4 @@ Citation metadata are provided in [`CITATION.cff`](CITATION.cff). GitHub can use
 
 No software license has yet been authorized for WALLpy. Consequently, the repository must not be described as open source or redistributed under assumed terms. A `LICENSE` file and matching metadata will be added only after the copyright holder selects a license.
 
+Third-party packages and model weights retain their own licenses; see [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
