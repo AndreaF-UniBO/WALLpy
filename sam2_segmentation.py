@@ -1,21 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-sam2_segmentation.py - Backend SAM 2 per WALLpy v12
+"""Official Meta SAM 2 backend for PyWALL v13.
 
 Segmenta una muratura con SAM 2 (Segment Anything Model 2, Meta AI) in
 modalità "automatic mask generation": SAM 2 propone una maschera per ogni
 oggetto/regione dell'immagine; le maschere vengono filtrate per area e la
 loro unione diventa la maschera binaria dei mattoni (255 = mattone,
-0 = malta), nello stesso formato interno usato da WALLpy.
+0 = malta), nello stesso formato interno usato da PyWALL.
 
-Backend supportati (in ordine di preferenza):
-  1. Pacchetto ufficiale `sam2` (facebookresearch/sam2) + checkpoint locale
-     in una cartella `checkpoints/` (vedi README_WALLpy_v12.md).
-  2. Pacchetto `ultralytics` (scarica automaticamente i pesi sam2.1_*.pt).
+Il backend richiede il pacchetto ufficiale ``facebookresearch/sam2`` e un
+checkpoint Meta locale nella cartella ``checkpoints``.
 
 Nessuna dipendenza pesante viene importata al caricamento del modulo:
-torch/sam2/ultralytics sono importati solo alla prima segmentazione.
+torch e sam2 sono importati solo alla prima segmentazione. PyWALL non scarica
+automaticamente pacchetti o pesi.
 """
 
 from pathlib import Path
@@ -57,14 +55,6 @@ _OFFICIAL_MODELS = {
     ),
 }
 
-# Pacchetto `ultralytics`: nome pesi (auto-download)
-_ULTRALYTICS_MODELS = {
-    "tiny": "sam2.1_t.pt",
-    "small": "sam2.1_s.pt",
-    "base_plus": "sam2.1_b.pt",
-    "large": "sam2.1_l.pt",
-}
-
 _DOWNLOAD_BASE = "https://dl.fbaipublicfiles.com/segment_anything_2/092824"
 
 # Cache dei modelli già caricati: {chiave: oggetto}
@@ -98,17 +88,17 @@ def _load_official_generator(model_size, checkpoint_dirs, device,
                              points_per_side, pred_iou_thresh,
                              stability_score_thresh):
     """Carica (con cache) il SAM2AutomaticMaskGenerator ufficiale."""
-    key = ("official", model_size, device, points_per_side,
+    ckpt, cfg = _find_official_checkpoint(model_size, checkpoint_dirs)
+    if ckpt is None:
+        raise FileNotFoundError("checkpoint SAM 2 non trovato")
+
+    key = ("official", str(ckpt.resolve()), device, points_per_side,
            pred_iou_thresh, stability_score_thresh)
     if key in _CACHE:
         return _CACHE[key]
 
     from sam2.build_sam import build_sam2
     from sam2.automatic_mask_generator import SAM2AutomaticMaskGenerator
-
-    ckpt, cfg = _find_official_checkpoint(model_size, checkpoint_dirs)
-    if ckpt is None:
-        raise FileNotFoundError("checkpoint SAM 2 non trovato")
 
     sam2_model = build_sam2(cfg, str(ckpt), device=device)
     generator = SAM2AutomaticMaskGenerator(
@@ -121,20 +111,6 @@ def _load_official_generator(model_size, checkpoint_dirs, device,
     )
     _CACHE[key] = generator
     return generator
-
-
-def _load_ultralytics_model(model_size):
-    """Carica (con cache) il modello SAM 2 di ultralytics."""
-    key = ("ultralytics", model_size)
-    if key in _CACHE:
-        return _CACHE[key]
-    from ultralytics import SAM
-    # Percorso assoluto accanto al modulo: il download (automatico se il file
-    # manca) e il caricamento non dipendono dalla cartella di lavoro corrente
-    weights = Path(__file__).resolve().parent / _ULTRALYTICS_MODELS[model_size]
-    model = SAM(str(weights))
-    _CACHE[key] = model
-    return model
 
 
 def _fuse_masks(mask_list, h, w, min_area_ratio, max_area_ratio):
@@ -175,9 +151,9 @@ def segment_wall_sam2(image_rgb,
       image_rgb: np.ndarray (H, W, 3) uint8, RGB.
       model_size: 'tiny' | 'small' | 'base_plus' | 'large'.
       device: 'cuda' | 'cpu' | None (auto).
-      points_per_side: densità della griglia di prompt (solo backend ufficiale).
+      points_per_side: densità della griglia di prompt.
       pred_iou_thresh / stability_score_thresh: soglie di qualità delle
-        maschere (solo backend ufficiale).
+        maschere.
       min_area_ratio / max_area_ratio: area relativa (0..1) minima/massima
         di una maschera perché sia considerata un mattone.
       max_side: se il lato massimo supera questo valore l'inferenza avviene
@@ -246,7 +222,7 @@ def segment_wall_sam2(image_rgb,
             records.sort(key=lambda r: r["area"], reverse=True)
             mask_list = [r["segmentation"].astype(bool) for r in records]
             n_total = len(mask_list)
-            backend = "sam2 (ufficiale)"
+            backend = "Meta SAM 2"
             device = dev
         except FileNotFoundError:
             ckpt_names = _OFFICIAL_MODELS[model_size][0]
@@ -259,50 +235,14 @@ def segment_wall_sam2(image_rgb,
         except Exception as e:
             errors.append(f"- backend 'sam2' fallito: {e}")
 
-    # ---------- Backend 2: `ultralytics` ----------
     if mask_list is None:
-        try:
-            from ultralytics import SAM  # noqa: F401
-            ultralytics_installed = True
-        except ImportError as e:
-            ultralytics_installed = False
-            errors.append(f"- pacchetto 'ultralytics' non installato ({e})")
-
-        if ultralytics_installed:
-            try:
-                dev = device or _get_device()
-                notify(f"Caricamento SAM 2 ({model_size}, backend ultralytics, {dev})...")
-                model = _load_ultralytics_model(model_size)
-                notify("Segmentazione automatica (può richiedere qualche minuto)...")
-                from PIL import Image as PILImage
-                results = model(PILImage.fromarray(img_infer), device=dev, verbose=False)
-                r = results[0]
-                mask_list = []
-                if r.masks is not None:
-                    data = r.masks.data.cpu().numpy()  # (N, h', w')
-                    for m in data:
-                        mb = m > 0.5
-                        if mb.shape != (h, w):
-                            mb = cv2.resize(mb.astype(np.uint8), (w, h),
-                                            interpolation=cv2.INTER_NEAREST).astype(bool)
-                        mask_list.append(mb)
-                    mask_list.sort(key=lambda m: int(m.sum()), reverse=True)
-                n_total = len(mask_list)
-                backend = "ultralytics"
-                device = dev
-            except Exception as e:
-                mask_list = None
-                errors.append(f"- backend 'ultralytics' fallito: {e}")
-
-    if mask_list is None:
-        msg = ("Nessun backend SAM 2 disponibile.\n\n"
+        msg = ("Il backend ufficiale Meta SAM 2 non è disponibile.\n\n"
                "Problemi riscontrati:\n" + "\n".join(errors) +
-               "\n\nPer installare SAM 2 (una delle due opzioni):\n"
-               "  A) pip install ultralytics\n"
-               "     (i pesi sam2.1 vengono scaricati automaticamente)\n"
-               "  B) pip install \"git+https://github.com/facebookresearch/sam2.git\"\n"
-               "     + download del checkpoint nella cartella 'checkpoints'\n\n"
-               "Dettagli nel file README_WALLpy_v12.md.")
+               "\n\nInstalla il pacchetto ufficiale da:\n"
+               "  https://github.com/facebookresearch/sam2\n"
+               "e colloca il checkpoint Meta richiesto nella cartella "
+               "'checkpoints'.\n\n"
+               "Dettagli nel file README_PyWALL_v13.md.")
         raise Sam2NotAvailableError(msg)
 
     t_infer = time.time() - t0

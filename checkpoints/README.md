@@ -1,16 +1,29 @@
-# SAM 2 checkpoints
+# Official Meta SAM 2 checkpoint
 
-Model weights are not stored in this repository. They are large third-party artifacts and remain subject to their upstream terms.
+PyWALL v13 supports only the official [`facebookresearch/sam2`](https://github.com/facebookresearch/sam2) backend.
 
-The simplest supported option is the Ultralytics backend:
+The default model requires this local file:
 
-```powershell
-python -m pip install ".[sam]"
+```text
+checkpoints/sam2.1_hiera_base_plus.pt
 ```
 
-WALLpy then requests the selected `sam2.1_*.pt` weight through Ultralytics when it is first needed.
+Download and verify it explicitly with:
 
-For Meta's official SAM 2 backend, install the upstream package and obtain one matching SAM 2 or SAM 2.1 checkpoint from the official project. Place the file in this directory using one of the names recognized in `sam2_segmentation.py`, such as `sam2.1_hiera_base_plus.pt` for the default model size.
+```powershell
+.\scripts\download_sam2_checkpoint.ps1
+```
 
-Before using or redistributing any checkpoint, consult the license and model-card information published by its provider. Do not commit downloaded weights to this repository.
+Official source:
 
+```text
+https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_base_plus.pt
+```
+
+Expected SHA-256:
+
+```text
+a2345aede8715ab1d5d31b4a509fb160c5a4af1970f199d9054ccfb746c004c5
+```
+
+The checkpoint is a large third-party artifact. Keep it available for local testing, but do not commit it to Git. Before any redistribution, review the current terms and attribution published by Meta.

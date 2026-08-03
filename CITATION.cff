@@ -1,16 +1,17 @@
 cff-version: 1.2.0
-message: "If you use WALLpy in research, please cite the software and the exact version or commit used."
-title: "WALLpy"
+message: "If you use PyWALL in research, please cite the software and the exact version or commit used."
+title: "PyWALL"
 type: software
-version: 0.1.0
+version: 0.13.0
+date-released: 2026-08-03
 license: Apache-2.0
 authors:
   - family-names: "Fiorini"
     given-names: "Andrea"
     email: "andrea.fiorini6@unibo.it"
     affiliation: "Department of History and Cultures, Alma Mater Studiorum - University of Bologna"
-repository-code: "https://github.com/AndreaF-UniBO/WALLpy"
 url: "https://andreaf-unibo.github.io/"
+repository-code: "https://github.com/AndreaF-UniBO/PyWALL"
 keywords:
   - archaeology of architecture
   - digital archaeology

@@ -1,33 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-WALLpy v12 - Segmentazione Murature con GUI Professionale
+"""PyWALL v13: desktop tools for masonry-image segmentation.
 
-# CHANGELOG v12 (2026-07-12):
-# - NUOVO: pulsante "🪄 SAM 2" per segmentazione con Segment Anything Model 2
-#   (Meta AI) in modalità automatic mask generation
-# - Backend SAM 2 in modulo separato (sam2_segmentation.py) con doppio
-#   supporto: pacchetto ufficiale 'sam2' + checkpoint locale, oppure
-#   'ultralytics' (download pesi automatico). Cache del modello tra le run.
-# - Le maschere SAM 2 vengono filtrate per area (scarta sfondo e rumore) e
-#   fuse nella maschera binaria mattoni/malta, integrata nel workflow
-#   esistente (filtri, gomma, bordi, export DXF/PNG)
-# - Percorsi pred.py/config.yaml risolti rispetto al project root: la DL
-#   continua a funzionare anche con lo script nella sottocartella WALLpy_v12
-#
-# CHANGELOG v11 (2025-10-08):
-# - Aggiunto pulsante "🤖 Segmentazione DL" per inferenza deep learning
-# - Integrazione con pred.py in modalità single-image
-# - Pre-processing: conversione RGB forzata + padding (non resize) a multipli 128
-# - Post-processing: crop alla dimensione originale
-# - Chiamata subprocess con sys.executable e percorsi assoluti
+The public v13 application provides two independent workflows:
+
+* K-Means segmentation, available with the core installation;
+* automatic mask generation with Meta's official SAM 2 backend.
+
+SAM 2 model weights are loaded from the local ``checkpoints`` directory and
+are never downloaded implicitly by the application.
 """
 
 import os
-import sys
-import subprocess
-import tempfile
-import shutil
 from pathlib import Path
 import tkinter as tk
 from tkinter import filedialog, messagebox
@@ -45,7 +29,7 @@ from numpy.linalg import norm
 # Modulo locale: backend SAM 2 (import leggero, torch caricato solo all'uso)
 import sam2_segmentation
 
-__version__ = "0.1.0"
+__version__ = "0.13.0"
 
 # ================================================
 #  OPTIONAL: ttkbootstrap (fallback a ttk se assente)
@@ -67,27 +51,6 @@ except ImportError:
 
 # --- Percorsi ---
 SCRIPT_DIR = Path(__file__).resolve().parent
-
-
-def _find_project_root():
-    """Find the optional legacy-DL project root.
-
-    ``WALLPY_LEGACY_ROOT`` makes this integration portable. The historical
-    sibling/parent lookup is retained for existing local installations.
-    """
-    configured_root = os.environ.get("WALLPY_LEGACY_ROOT")
-    candidates = []
-    if configured_root:
-        candidates.append(Path(configured_root).expanduser())
-    candidates.extend((SCRIPT_DIR, SCRIPT_DIR.parent))
-
-    for cand in candidates:
-        if (cand / "pred.py").is_file():
-            return cand.resolve()
-    return None
-
-
-PROJECT_ROOT = _find_project_root()
 
 # --- Costanti ---
 TARGET_BRICK_COLOR_RGB = (255, 100, 0)
@@ -246,11 +209,11 @@ def recolor_from_mask(mask, img_lab_original, brick_color_rgb, mortar_color_rgb)
 
     return Image.fromarray(processed_img_rgb)
 
-# --- Classe Applicazione Modernizzata ---
-class WALLpyModern:
+# --- Classe Applicazione ---
+class PyWALLApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("WALLpy Pro v12 – Segmentazione Murature")
+        self.root.title("PyWALL v13 – Segmentazione murature")
         self.root.geometry("1400x800")
 
         if USE_TTKB:
@@ -314,11 +277,8 @@ class WALLpyModern:
         self.load_button = ttk.Button(file_frame, text="📂 Carica Immagine", command=self.load_image)
         self.load_button.pack(side=tk.LEFT, padx=2)
 
-        self.process_button = ttk.Button(file_frame, text="🧮 Segmentazione", command=self.run_initial_segmentation, state=tk.DISABLED)
+        self.process_button = ttk.Button(file_frame, text="🧮 K-Means", command=self.run_initial_segmentation, state=tk.DISABLED)
         self.process_button.pack(side=tk.LEFT, padx=2)
-
-        self.process_dl_button = ttk.Button(file_frame, text="🤖 Segmentazione DL", command=self.run_dl_segmentation, state=tk.DISABLED)
-        self.process_dl_button.pack(side=tk.LEFT, padx=2)
 
         self.process_sam2_button = ttk.Button(file_frame, text="🪄 SAM 2", command=self.run_sam2_segmentation, state=tk.DISABLED)
         self.process_sam2_button.pack(side=tk.LEFT, padx=2)
@@ -490,7 +450,6 @@ class WALLpyModern:
         """Aggiorna lo stato dell'interfaccia"""
         if state == 'initial':
             self.process_button.config(state=tk.DISABLED)
-            self.process_dl_button.config(state=tk.DISABLED)
             self.process_sam2_button.config(state=tk.DISABLED)
             self.eraser_button.config(state=tk.DISABLED)
             self.reset_eraser_button.config(state=tk.DISABLED)
@@ -501,7 +460,6 @@ class WALLpyModern:
             self._set_filter_controls_state(tk.DISABLED)
         elif state == 'image_loaded':
             self.process_button.config(state=tk.NORMAL)
-            self.process_dl_button.config(state=tk.NORMAL)
             self.process_sam2_button.config(state=tk.NORMAL)
             self.eraser_button.config(state=tk.DISABLED)
             self.reset_eraser_button.config(state=tk.DISABLED)
@@ -512,7 +470,6 @@ class WALLpyModern:
             self._set_filter_controls_state(tk.DISABLED)
         elif state == 'segmented':
             self.process_button.config(state=tk.NORMAL)
-            self.process_dl_button.config(state=tk.NORMAL)
             self.process_sam2_button.config(state=tk.NORMAL)
             self.eraser_button.config(state=tk.NORMAL)
             self.show_contours_button.config(state=tk.NORMAL)
@@ -523,7 +480,6 @@ class WALLpyModern:
         """Abilita/disabilita i pulsanti di caricamento e segmentazione"""
         self.load_button.config(state=state)
         self.process_button.config(state=state)
-        self.process_dl_button.config(state=state)
         self.process_sam2_button.config(state=state)
 
     def _resize_image_for_canvas(self, img_pil, canvas_w, canvas_h, resampling_method):
@@ -762,210 +718,6 @@ class WALLpyModern:
         self.avg_mortar_lab = np.mean(mortar_pixels, axis=0) if len(mortar_pixels) > 0 else np.array([80.0, 0.0, 0.0])
         self.avg_brick_lab = np.mean(brick_pixels, axis=0) if len(brick_pixels) > 0 else np.array([50.0, 20.0, 20.0])
 
-    def run_dl_segmentation(self):
-        """Esegue la segmentazione usando Deep Learning (model-12000)"""
-        self._close_binary_mask_window_if_open()
-        if not self.image_path or not self.original_pil_image:
-            return
-
-        self._set_status("Segmentazione DL in corso...", "Preparazione")
-        self._set_process_buttons_state(tk.DISABLED)
-
-        if self.erasing_active:
-            self._toggle_eraser()
-        if self.show_contours_active:
-            self._toggle_show_contours(force_off=True)
-
-        self.manual_mask = None
-        self.brick_contours = None
-        self.pil_mask_for_display = None
-
-        temp_dir = None
-        temp_output_dir = None
-        try:
-            if PROJECT_ROOT is None:
-                raise FileNotFoundError(
-                    "Integrazione DL legacy non configurata. Imposta la variabile "
-                    "WALLPY_LEGACY_ROOT sulla cartella contenente pred.py e output/."
-                )
-
-            # Crea directory temporanea per output
-            temp_output_dir = tempfile.mkdtemp(prefix="wallpy_dl_output_")
-
-            # Prepara immagine temporanea
-            temp_dir = tempfile.mkdtemp(prefix="wallpy_dl_input_")
-            temp_image_name = "temp_inference.png"
-            temp_image_path = os.path.join(temp_dir, temp_image_name)
-
-            # Pre-processing
-            img_to_save = self.original_pil_image.copy()
-
-            # 1. CONVERSIONE RGB FORZATA
-            if img_to_save.mode != 'RGB':
-                self._set_status("Conversione a RGB...", f"Da {img_to_save.mode}")
-
-                if img_to_save.mode == 'RGBA':
-                    # Rimuovi alpha, composite su bianco
-                    background = Image.new('RGB', img_to_save.size, (255, 255, 255))
-                    background.paste(img_to_save, mask=img_to_save.split()[3])
-                    img_to_save = background
-                else:
-                    img_to_save = img_to_save.convert('RGB')
-
-            # 2. PADDING (NON RESIZE) a multipli di 128
-            w, h = img_to_save.size
-            pad_w = (128 - w % 128) % 128
-            pad_h = (128 - h % 128) % 128
-
-            pad_info = None
-            if pad_w > 0 or pad_h > 0:
-                self._set_status("Padding immagine...", f"+{pad_w}px width, +{pad_h}px height")
-
-                # Padding simmetrico
-                pad_left = pad_w // 2
-                pad_right = pad_w - pad_left
-                pad_top = pad_h // 2
-                pad_bottom = pad_h - pad_top
-
-                # Pad con mode='reflect' (riflette i bordi)
-                img_array = np.array(img_to_save)
-                img_padded = np.pad(img_array,
-                                   ((pad_top, pad_bottom), (pad_left, pad_right), (0, 0)),
-                                   mode='reflect')
-                img_to_save = Image.fromarray(img_padded)
-
-                # Salva info per crop successivo
-                pad_info = {
-                    'top': pad_top,
-                    'bottom': pad_bottom,
-                    'left': pad_left,
-                    'right': pad_right,
-                    'original_size': (w, h)
-                }
-
-            img_to_save.save(temp_image_path)
-
-            # ===== PERCORSI ASSOLUTI (relativi al PROJECT ROOT, non allo script) =====
-            pred_script = str(PROJECT_ROOT / "pred.py")
-            config_path = str(PROJECT_ROOT / "output" / "supervised" /
-                              "accurate" / "large" / "clDiceLoss" /
-                              "1" / "config.yaml")
-            temp_image_path_abs = os.path.abspath(temp_image_path)
-            temp_output_dir_abs = os.path.abspath(temp_output_dir)
-
-            # Verifica esistenza file critici
-            if not os.path.exists(pred_script):
-                raise FileNotFoundError(f"pred.py non trovato: {pred_script}")
-            if not os.path.exists(config_path):
-                raise FileNotFoundError(f"config.yaml non trovato: {config_path}")
-
-            self._set_status("Esecuzione inferenza DL...", "Attendere")
-
-            # ===== SUBPROCESS CON sys.executable =====
-            # cwd=PROJECT_ROOT: pred.py carica lib/ e dataset/ con path relativi
-            result = subprocess.run(
-                [
-                    sys.executable,
-                    pred_script,
-                    "--config", config_path,
-                    "--single_image", temp_image_path_abs,
-                    "--output_dir", temp_output_dir_abs
-                ],
-                cwd=str(PROJECT_ROOT),
-                capture_output=True,
-                text=True,
-                timeout=300
-            )
-
-            # Gestione exit codes
-            if result.returncode != 0:
-                error_msg = f"Errore pred.py (exit code {result.returncode})"
-                if result.returncode == 1:
-                    error_msg = "Modello non trovato. Verifica il percorso."
-                elif result.returncode == 2:
-                    error_msg = "GPU out of memory. Prova con immagine più piccola."
-                elif result.returncode == 3:
-                    error_msg = "Immagine input non valida."
-
-                raise RuntimeError(f"{error_msg}\nSTDERR: {result.stderr}")
-
-
-            # Echo dei log di pred.py in console (utile per verificare che giri davvero la DL)
-            if result.stdout:
-                print(result.stdout)
-
-            # ===== LEGGI OUTPUT (naming: <stem>.png) =====
-            expected_output = os.path.join(temp_output_dir_abs,
-                                          f"{Path(temp_image_name).stem}.png")
-
-            if not os.path.exists(expected_output):
-                raise FileNotFoundError(f"Output non trovato: {expected_output}")
-
-            # Carica predizione
-            pred_img = Image.open(expected_output).convert('L')
-            pred_mask = np.array(pred_img)
-
-            # 3. CROP se era stato fatto padding
-            if pad_info:
-                self._set_status("Crop alla dimensione originale...")
-
-                top = pad_info['top']
-                bottom = pad_info['bottom']
-                left = pad_info['left']
-                right = pad_info['right']
-
-                # Crop per rimuovere il padding
-                h_padded, w_padded = pred_mask.shape
-                pred_mask = pred_mask[top:h_padded-bottom, left:w_padded-right]
-
-                # Verifica dimensioni
-                orig_w, orig_h = pad_info['original_size']
-                if pred_mask.shape != (orig_h, orig_w):
-                    raise ValueError(f"Crop error: expected {(orig_h, orig_w)}, got {pred_mask.shape}")
-
-            # Converti nel formato interno WALLpy
-            # Output pred.py: bianco=mattoni(255), nero=malta(0)
-            # WALLpy interno: BRICK_MASK_VALUE=255, MORTAR_MASK_VALUE=0
-            internal_mask = np.where(pred_mask > 127, BRICK_MASK_VALUE, MORTAR_MASK_VALUE).astype(np.uint8)
-
-            # Setup per compatibilità con workflow esistente
-            self._adopt_binary_mask(internal_mask)
-
-            self._set_status("Segmentazione DL completata")
-
-            self._reset_filter_controls()
-
-            # Info
-            mortar_pct = (np.sum(internal_mask == MORTAR_MASK_VALUE) / internal_mask.size) * 100
-            brick_pct = 100 - mortar_pct
-
-            info = f"SEGMENTAZIONE DL COMPLETATA\n"
-            info += f"━━━━━━━━━━━━━━━━━━━━━━━\n"
-            info += f"Modello: DynUNet (12k iter)\n"
-            info += f"Malta: {mortar_pct:.1f}%\n"
-            info += f"Mattoni: {brick_pct:.1f}%\n\n"
-            info += "Usa i controlli per raffinare\nil risultato."
-            self._update_info(info)
-
-            self.update_processed_image()
-            self._update_ui_state('segmented')
-
-        except subprocess.TimeoutExpired:
-            messagebox.showerror("Errore", "Timeout: inferenza >5 min")
-            self._set_status("Timeout inferenza DL")
-        except Exception as e:
-            messagebox.showerror("Errore Segmentazione DL", f"Errore:\n{str(e)}")
-            self._set_status("Errore segmentazione DL")
-            traceback.print_exc()
-        finally:
-            for path in (temp_dir, temp_output_dir):
-                if path:
-                    try:
-                        shutil.rmtree(path)
-                    except OSError:
-                        pass
-            self._set_process_buttons_state(tk.NORMAL)
-
     def run_sam2_segmentation(self):
         """Esegue la segmentazione con SAM 2 (automatic mask generation).
 
@@ -1005,10 +757,7 @@ class WALLpyModern:
                 min_area_ratio=SAM2_MIN_AREA_RATIO,
                 max_area_ratio=SAM2_MAX_AREA_RATIO,
                 max_side=SAM2_MAX_SIDE,
-                checkpoint_dirs=[
-                    SCRIPT_DIR / "checkpoints",
-                    *([PROJECT_ROOT / "checkpoints"] if PROJECT_ROOT else []),
-                ],
+                checkpoint_dirs=[SCRIPT_DIR / "checkpoints"],
                 progress_callback=progress,
             )
 
@@ -1051,7 +800,7 @@ class WALLpyModern:
 
         except sam2_segmentation.Sam2NotAvailableError as e:
             messagebox.showerror("SAM 2 non disponibile", str(e))
-            self._set_status("SAM 2 non disponibile", "Vedi README_WALLpy_v12.md")
+            self._set_status("SAM 2 non disponibile", "Vedi README_PyWALL_v13.md")
         except Exception as e:
             messagebox.showerror("Errore Segmentazione SAM 2", f"Errore:\n{str(e)}")
             self._set_status("Errore segmentazione SAM 2")
@@ -1518,7 +1267,7 @@ def main():
     else:
         root = tk.Tk()
 
-    app = WALLpyModern(root)
+    app = PyWALLApp(root)
     root.mainloop()
 
 if __name__ == "__main__":

@@ -1,157 +1,130 @@
-# WALLpy
+# PyWALL v13
 
-[![Tests](https://github.com/AndreaF-UniBO/WALLpy/actions/workflows/tests.yml/badge.svg)](https://github.com/AndreaF-UniBO/WALLpy/actions/workflows/tests.yml)
-[![Project website](https://img.shields.io/badge/project-website-7b2d26)](https://andreaf-unibo.github.io/)
+PyWALL is a desktop application for assisting masonry-image segmentation and the production of archaeological drawing outputs. Version 13 is the current public alpha release.
 
-WALLpy is a local desktop application for segmenting masonry units and mortar joints in raster images. It supports image-based documentation workflows in archaeology of architecture by turning a reviewed segmentation into a binary raster mask or scaled DXF contour geometry.
+[Project website](https://andreaf-unibo.github.io/) · [Source repository](https://github.com/AndreaF-UniBO/PyWALL) · [Release v0.13.0](https://github.com/AndreaF-UniBO/PyWALL/releases/tag/v0.13.0)
 
-The application combines an unsupervised K-Means workflow with optional Segment Anything Model 2 (SAM 2) support. A separate legacy deep-learning command can be connected to an existing WALLpy model installation; the trained legacy model and its dataset are not distributed here.
+The application provides two independent segmentation workflows:
 
-> **Project status:** preliminary research software, initial release `0.1.0`. Segmentation results require expert review and must not be treated as an autonomous archaeological interpretation.
+- a self-contained K-Means baseline based on colour and texture features;
+- optional automatic-mask generation through Meta's official Segment Anything Model 2 (SAM 2) implementation.
 
-![WALLpy desktop interface](docs/assets/wallpy-interface.png)
+The historical custom deep-learning pipeline is not part of PyWALL v13.
 
-## Scientific scope
+## Status
 
-WALLpy addresses the time-consuming separation of masonry elements and joints in rectified or conventional photographs. Its outputs can support subsequent drawing and documentation, but their archaeological validity depends on image quality, parameter choices, scale calibration, and specialist assessment.
+PyWALL v13 is an alpha-quality research-software release (`0.13.0`). Its outputs must be reviewed by an archaeologist and must not be treated as validated interpretations without expert assessment.
 
-### Main features
+![PyWALL v13 desktop interface](docs/assets/pywall-v13-interface.png)
 
-- K-Means segmentation using colour, edge, and local-texture features.
-- Optional automatic-mask generation with SAM 2 through Ultralytics or the official Meta backend.
-- Morphological opening, closing, median filtering, and colour-based refinement.
-- Manual erasing and contour preview in the desktop interface.
-- Binary PNG-mask export.
-- Scaled DXF polyline export for further drafting or analysis.
-- Optional connection to the historical WALLpy supervised model installation.
+## Main features
+
+- Load JPEG and PNG masonry photographs.
+- Segment an image with K-Means or Meta SAM 2.
+- Refine the binary masonry mask through morphological and colour controls.
+- Correct the result manually with an eraser tool.
+- Inspect contours and binary masks.
+- Export masks as PNG and traced contours as DXF.
 
 ## Requirements
 
-- Python 3.11 or newer. Python 3.11 is the version currently used for validation.
-- A desktop session with Tk 8.6 or compatible Tk support.
-- Sufficient memory for the selected image and segmentation method.
-- SAM 2 is optional. A CUDA-capable GPU can accelerate model inference, but CPU execution is supported by the backends and may be slow.
+- Windows 10 or Windows 11 for the supplied PowerShell setup scripts.
+- 64-bit Python 3.11.
+- At least 8 GB of free space during setup. The verified local bundle occupies approximately 5.2 GB after installation.
+- For SAM 2: an NVIDIA CUDA-capable GPU is recommended. CPU inference is possible but may be very slow.
 
-WALLpy is currently tested on Windows. Other operating systems are not yet claimed as verified even though the core libraries are cross-platform.
+Meta recommends WSL for SAM 2 on Windows. This bundle also provides a native-Windows setup for local validation; compatibility must be confirmed on the target computer.
 
 ## Installation
 
-Clone the repository, create an isolated environment, and install the application:
+Open PowerShell in this directory and run:
 
 ```powershell
-git clone https://github.com/AndreaF-UniBO/WALLpy.git
-cd WALLpy
+Set-ExecutionPolicy -Scope Process Bypass
+.\scripts\setup_windows.ps1
+.\scripts\download_sam2_checkpoint.ps1
+.\scripts\test_local.ps1
+.\scripts\run_pywall.ps1
+```
+
+The scripts create an isolated `.venv`, install the core application, install PyTorch and the official Meta SAM 2 package, download the official `sam2.1_hiera_base_plus.pt` checkpoint, verify its SHA-256 checksum, and run the smoke tests.
+
+Use `setup_windows.ps1 -Cpu` only when CUDA is unavailable.
+
+Detailed Italian instructions are available in [README_PyWALL_v13.md](README_PyWALL_v13.md).
+
+## Manual installation
+
+```powershell
 py -3.11 -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install .
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
+.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+.\.venv\Scripts\python.exe -m pip install torch==2.5.1 torchvision==0.20.1 --index-url https://download.pytorch.org/whl/cu121
+$env:SAM2_BUILD_CUDA = "0"
+.\.venv\Scripts\python.exe -m pip install --no-build-isolation "git+https://github.com/facebookresearch/sam2.git@2b90b9f5ceec907a1c18123530e92e794ad901a4"
 ```
 
-For the optional Ultralytics SAM 2 backend:
-
-```powershell
-python -m pip install ".[sam]"
-```
-
-Ultralytics is licensed upstream under AGPL-3.0. Installing this optional extra adds a separately licensed component to the runtime environment; review the [third-party notices](THIRD_PARTY_NOTICES.md) and the upstream terms before use or redistribution.
-
-For development and tests:
-
-```powershell
-python -m pip install -e ".[dev]"
-python -m pytest
-```
-
-The official Meta SAM 2 backend can also be installed from its upstream repository. Download its checkpoint separately into `checkpoints/`; see [checkpoint setup](checkpoints/README.md). Model weights are intentionally excluded from this repository.
+Then download the official Meta checkpoint following the [checkpoint instructions](checkpoints/README.md).
 
 ## Starting the application
 
-After installation, use either command:
-
 ```powershell
-wallpy
+.\scripts\run_pywall.ps1
 ```
 
-```powershell
-python WALLpy_v12.py
-```
+or:
 
-The application is a desktop GUI, not a web service. GitHub Pages hosts only the project links and static documentation; it cannot execute WALLpy.
+```powershell
+.\.venv\Scripts\python.exe PyWALL_v13.py
+```
 
 ## Minimal workflow
 
-1. Select **Carica Immagine** and open a raster image.
-2. Choose **K-Means** for the self-contained baseline, or **SAM 2** if an optional backend is installed.
-3. Review the recoloured result and adjust the morphological and colour-refinement controls.
-4. Use the eraser and contour preview where necessary.
-5. Export a binary PNG mask, or enter a scale in metres per pixel and export DXF contours.
+1. Select **Carica Immagine** and choose a JPEG or PNG image that you are entitled to process. A local validation bundle may also contain test files under `samples/`.
+2. Select **K-Means** for the core workflow or **SAM 2** for the official Meta model.
+3. Adjust the filter controls and, where appropriate, correct the mask manually.
+4. Inspect the contours and binary mask.
+5. Export a PNG mask or DXF contours.
 
-### Inputs
+## Inputs and outputs
 
-The file dialog accepts common raster formats supported by Pillow, including PNG, JPEG, TIFF, and BMP. WALLpy converts loaded images to RGB. The repository contains no archaeological dataset and no claim is made that a specific acquisition protocol guarantees correct segmentation.
+Inputs are ordinary raster images supported by Pillow, primarily JPEG and PNG. Images are converted to RGB internally.
 
-### Outputs
+The internal binary mask uses `255` for masonry units and `0` for mortar. PyWALL can save the mask as PNG and export detected contours to DXF using the scale entered in the interface.
 
-- **Binary PNG:** a monochrome segmentation mask suitable for review or downstream image processing.
-- **DXF:** closed lightweight polylines derived from detected masonry contours. Coordinates are scaled using the user-supplied metres-per-pixel value, and the vertical image axis is converted to Cartesian orientation.
+## Samples
 
-Always retain the original image and record the parameters used. WALLpy does not currently write a provenance sidecar or project file.
+Six masonry photographs were used for local validation, but their redistribution rights have not been confirmed and the image files are therefore not included in this public repository. See [samples/README.md](samples/README.md) for the policy and instructions for supplying local test images.
 
-## Optional legacy deep-learning integration
+## SAM 2 model handling
 
-The **Segmentazione DL** button calls a historical `pred.py` pipeline and model configuration that are not part of this repository. Set `WALLPY_LEGACY_ROOT` to a local directory containing `pred.py` and the expected `output/` model configuration tree:
+PyWALL uses only the official [`facebookresearch/sam2`](https://github.com/facebookresearch/sam2) backend. It does not use Ultralytics and never downloads weights silently. The official checkpoint is stored locally under `checkpoints/` and remains excluded from Git.
 
-```powershell
-$env:WALLPY_LEGACY_ROOT = "C:\path\to\legacy-wallpy"
-wallpy
-```
+## Known limitations
 
-If the variable is absent, WALLpy retains the historical sibling/parent-directory discovery for existing installations. See [legacy integration details](docs/legacy-deep-learning.md).
+- SAM 2 installation on native Windows is best-effort; Meta recommends WSL.
+- First model loading can require substantial RAM and GPU memory.
+- Automatic SAM 2 masks identify visual regions; the area-fusion heuristic does not classify archaeological relationships.
+- Segmentation quality depends on lighting, image scale, surface condition and parameter selection.
+- Only environments actually reported in the test log should be considered tested.
 
 ## Project structure
 
 ```text
-WALLpy_v12.py          Desktop interface and core image-processing workflow
-sam2_segmentation.py   Optional SAM 2 adapter and mask fusion
-pyproject.toml         Package metadata and dependency declarations
-checkpoints/           Instructions only; model weights are not tracked
-docs/assets/           Public documentation assets
-tests/                 Deterministic unit and smoke tests
-.github/workflows/     Continuous-integration configuration
+PyWALL_v13.py             Main Tkinter desktop application
+sam2_segmentation.py      Official Meta SAM 2 adapter
+checkpoints/              Local Meta checkpoint and verification information
+samples/                  Policy file; user-supplied test photographs stay local
+scripts/                  Windows setup, download, test and launch helpers
+tests/                    Unit, GUI and optional model smoke tests
+docs/                     Local verification notes
+pyproject.toml            Packaging and dependency metadata
 ```
 
-## Known limitations
+## Citation and authorship
 
-- The desktop interface is currently in Italian.
-- Only Windows with Python 3.11 is part of the present validation scope.
-- SAM 2 may download large weights on first use and can require substantial RAM or GPU memory.
-- The SAM 2 mask-fusion heuristic filters candidates by relative area; it does not classify architectural relationships.
-- The legacy supervised workflow is unavailable without separately obtained model assets and code.
-- Exported geometry must be checked and, where necessary, edited by a specialist.
-
-## Troubleshooting
-
-- **`wallpy` is not recognized:** reactivate the virtual environment or run `python WALLpy_v12.py`.
-- **Tkinter cannot open a window:** run from a graphical desktop session and verify `python -c "import tkinter"`.
-- **SAM 2 is unavailable:** install `.[sam]`, or follow the official-backend checkpoint instructions.
-- **SAM 2 is slow or runs out of memory:** use a smaller model, reduce the maximum inference side, or run on a CUDA-capable system.
-- **Legacy DL files are missing:** configure `WALLPY_LEGACY_ROOT`; those files are not distributed here.
-- **DXF export is disabled:** reinstall the core package and confirm `python -c "import ezdxf"` succeeds.
-
-## Author and affiliation
-
-Andrea Fiorini — Archaeology of Architecture, *Area dei Funzionari – Settore scientifico-tecnologico*, Department of History and Cultures (Ravenna campus), Alma Mater Studiorum – University of Bologna.
-
-- Project website: [andreaf-unibo.github.io](https://andreaf-unibo.github.io/)
-- GitHub profile: [AndreaF-UniBO](https://github.com/AndreaF-UniBO)
-- Contact: [andrea.fiorini6@unibo.it](mailto:andrea.fiorini6@unibo.it)
-
-## Citation
-
-Citation metadata are provided in [`CITATION.cff`](CITATION.cff). GitHub can use this file to generate a formatted citation after publication. Until a versioned release exists, cite the repository URL together with the accessed commit hash.
+PyWALL is authored by Andrea Fiorini, Department of History and Cultures, Alma Mater Studiorum – University of Bologna. See [CITATION.cff](CITATION.cff) for machine-readable citation metadata.
 
 ## License
 
-WALLpy is open-source software licensed under the [Apache License 2.0](LICENSE). Copyright 2026 Andrea Fiorini. See [`NOTICE`](NOTICE) for attribution information.
-
-Third-party packages and model weights retain their own licenses; see [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+PyWALL source code is licensed under the [Apache License 2.0](LICENSE). Third-party packages and the Meta SAM 2 model remain subject to their upstream terms; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and [NOTICE](NOTICE).
