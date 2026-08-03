@@ -7,7 +7,7 @@ WALLpy is a local desktop application for segmenting masonry units and mortar jo
 
 The application combines an unsupervised K-Means workflow with optional Segment Anything Model 2 (SAM 2) support. A separate legacy deep-learning command can be connected to an existing WALLpy model installation; the trained legacy model and its dataset are not distributed here.
 
-> **Project status:** preliminary research software. The packaging version is `0.1.0`, but no public release should be issued until the repository license has been selected and all release checks have passed. Segmentation results require expert review and must not be treated as an autonomous archaeological interpretation.
+> **Project status:** preliminary research software, initial release `0.1.0`. Segmentation results require expert review and must not be treated as an autonomous archaeological interpretation.
 
 ![WALLpy desktop interface](docs/assets/wallpy-interface.png)
 
@@ -152,6 +152,6 @@ Citation metadata are provided in [`CITATION.cff`](CITATION.cff). GitHub can use
 
 ## License
 
-No software license has yet been authorized for WALLpy. Consequently, the repository must not be described as open source or redistributed under assumed terms. A `LICENSE` file and matching metadata will be added only after the copyright holder selects a license.
+WALLpy is open-source software licensed under the [Apache License 2.0](LICENSE). Copyright 2026 Andrea Fiorini. See [`NOTICE`](NOTICE) for attribution information.
 
 Third-party packages and model weights retain their own licenses; see [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).

@@ -80,6 +80,8 @@ def test_readme_relative_links_resolve():
         "docs/legacy-deep-learning.md",
         "CITATION.cff",
         "THIRD_PARTY_NOTICES.md",
+        "LICENSE",
+        "NOTICE",
     ]
 
     readme = (root / "README.md").read_text(encoding="utf-8")
@@ -97,5 +99,7 @@ def test_project_configuration_files_parse():
     )
 
     assert pyproject["project"]["version"] == WALLpy_v12.__version__
+    assert pyproject["project"]["license"] == "Apache-2.0"
     assert citation["cff-version"] == "1.2.0"
+    assert citation["license"] == "Apache-2.0"
     assert workflow["jobs"]["test"]["runs-on"] == "windows-latest"

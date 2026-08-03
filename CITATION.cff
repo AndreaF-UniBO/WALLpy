@@ -3,6 +3,7 @@ message: "If you use WALLpy in research, please cite the software and the exact 
 title: "WALLpy"
 type: software
 version: 0.1.0
+license: Apache-2.0
 authors:
   - family-names: "Fiorini"
     given-names: "Andrea"
@@ -15,4 +16,3 @@ keywords:
   - digital archaeology
   - image segmentation
   - masonry
-

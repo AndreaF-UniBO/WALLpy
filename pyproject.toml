@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=69", "wheel"]
+requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -8,6 +8,7 @@ version = "0.1.0"
 description = "Desktop tools for masonry-image segmentation and archaeological drawing support."
 readme = "README.md"
 requires-python = ">=3.11"
+license = "Apache-2.0"
 authors = [
   { name = "Andrea Fiorini", email = "andrea.fiorini6@unibo.it" },
 ]
@@ -52,6 +53,7 @@ Issues = "https://github.com/AndreaF-UniBO/WALLpy/issues"
 
 [tool.setuptools]
 py-modules = ["WALLpy_v12", "sam2_segmentation"]
+license-files = ["LICENSE", "NOTICE", "THIRD_PARTY_NOTICES.md"]
 
 [tool.pytest.ini_options]
 addopts = "-ra"

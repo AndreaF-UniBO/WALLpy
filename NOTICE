@@ -1,0 +1,10 @@
+WALLpy
+Copyright 2026 Andrea Fiorini
+
+Licensed under the Apache License, Version 2.0.
+
+WALLpy uses separately installed third-party packages and optional model
+backends. Their notices and upstream license information are documented in
+THIRD_PARTY_NOTICES.md. No third-party model weights are distributed with
+WALLpy.
+
