@@ -6,7 +6,6 @@ Please report suspected vulnerabilities privately to Andrea Fiorini at `andrea.f
 
 ## Data handling
 
-WALLpy processes images locally. The application itself does not upload input images, but optional third-party packages may download model weights. Users are responsible for verifying that archaeological imagery, datasets, and derived outputs may lawfully be processed and shared.
+PyWALL processes images locally and does not upload them. The application does not download model weights implicitly. The supplied checkpoint script performs an explicit HTTPS download from Meta and rejects a file whose SHA-256 checksum does not match the documented value. Users are responsible for verifying that archaeological imagery, datasets, and derived outputs may lawfully be processed and shared.
 
 Credentials, `.env` files, model weights, datasets, generated results, and local databases must not be committed to the repository.
-
