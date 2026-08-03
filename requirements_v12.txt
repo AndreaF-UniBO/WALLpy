@@ -1,6 +1,0 @@
-# Compatibility note for existing WALLpy v12 users.
-# The canonical dependency declaration is now pyproject.toml.
-# Install the core application with:
-#   python -m pip install .
-# Install the optional Ultralytics SAM 2 backend with:
-#   python -m pip install ".[sam]"

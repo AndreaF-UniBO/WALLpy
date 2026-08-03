@@ -3,8 +3,8 @@ requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "wallpy"
-version = "0.1.0"
+name = "pywall"
+version = "0.13.0"
 description = "Desktop tools for masonry-image segmentation and archaeological drawing support."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -39,20 +39,22 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-sam = ["ultralytics>=8.3"]
+sam2 = [
+  "SAM-2 @ git+https://github.com/facebookresearch/sam2.git@2b90b9f5ceec907a1c18123530e92e794ad901a4",
+]
 dev = ["pytest>=8.0", "PyYAML>=6.0"]
 
 [project.scripts]
-wallpy = "WALLpy_v12:main"
+pywall = "PyWALL_v13:main"
 
 [project.urls]
 Homepage = "https://andreaf-unibo.github.io/"
-Repository = "https://github.com/AndreaF-UniBO/WALLpy"
-Documentation = "https://github.com/AndreaF-UniBO/WALLpy#readme"
-Issues = "https://github.com/AndreaF-UniBO/WALLpy/issues"
+Repository = "https://github.com/AndreaF-UniBO/PyWALL"
+Documentation = "https://github.com/AndreaF-UniBO/PyWALL#installation"
+Issues = "https://github.com/AndreaF-UniBO/PyWALL/issues"
 
 [tool.setuptools]
-py-modules = ["WALLpy_v12", "sam2_segmentation"]
+py-modules = ["PyWALL_v13", "sam2_segmentation"]
 license-files = ["LICENSE", "NOTICE", "THIRD_PARTY_NOTICES.md"]
 
 [tool.pytest.ini_options]

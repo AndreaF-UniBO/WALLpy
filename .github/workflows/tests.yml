@@ -24,11 +24,10 @@ jobs:
         run: python -m pip install ".[dev]"
 
       - name: Compile Python sources
-        run: python -m compileall -q WALLpy_v12.py sam2_segmentation.py
+        run: python -m compileall -q PyWALL_v13.py sam2_segmentation.py
 
       - name: Smoke-test imports
-        run: python -c "import WALLpy_v12, sam2_segmentation; print(WALLpy_v12.__version__)"
+        run: python -c "import PyWALL_v13, sam2_segmentation; print(PyWALL_v13.__version__)"
 
       - name: Run tests
         run: python -m pytest
-

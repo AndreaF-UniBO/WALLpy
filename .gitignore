@@ -1,5 +1,6 @@
 # Python environments and caches
 .venv/
+.venv*/
 venv/
 env/
 **/__pycache__/
@@ -51,6 +52,11 @@ models/
 checkpoints/*
 !checkpoints/README.md
 !checkpoints/LEGGIMI.txt
+!checkpoints/SHA256SUMS
+
+# Local test photographs; publish only after rights review
+samples/*
+!samples/README.md
 
 # Local pre-release material with unknown redistribution provenance
 test_sam2/
@@ -58,4 +64,3 @@ test_sam2/
 # Local safety backup and separately versioned website checkout
 .release-backup-*/
 site-repository/
-

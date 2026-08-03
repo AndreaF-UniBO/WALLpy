@@ -1,13 +1,14 @@
-Cartella per i checkpoint SAM 2 (necessari solo con il backend ufficiale 'sam2').
+PyWALL v13 usa esclusivamente il backend ufficiale Meta SAM 2.
 
-Scarica qui uno di questi file (il default dell'app è base_plus):
+Il modello predefinito deve trovarsi qui:
 
-  sam2.1_hiera_tiny.pt       https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_tiny.pt
-  sam2.1_hiera_small.pt      https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_small.pt
-  sam2.1_hiera_base_plus.pt  https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_base_plus.pt
-  sam2.1_hiera_large.pt      https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_large.pt
+  checkpoints\sam2.1_hiera_base_plus.pt
 
-Se usi il backend 'ultralytics' (pip install ultralytics) questa cartella
-non serve: i pesi vengono scaricati automaticamente.
+Per scaricarlo dalla fonte ufficiale e verificarne automaticamente il checksum:
 
-Vedi README_WALLpy_v12.md per i dettagli.
+  .\scripts\download_sam2_checkpoint.ps1
+
+SHA-256 atteso:
+  a2345aede8715ab1d5d31b4a509fb160c5a4af1970f199d9054ccfb746c004c5
+
+Il checkpoint serve per il test locale ma non deve essere aggiunto a Git.

@@ -1,0 +1,5 @@
+# Local core and test installation. The canonical dependency metadata is in
+# pyproject.toml. PyTorch and Meta SAM 2 are installed separately by
+# scripts/setup_windows.ps1 because the correct PyTorch index is platform-
+# dependent.
+-e .[dev]

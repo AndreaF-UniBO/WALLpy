@@ -1,4 +1,5 @@
 from pathlib import Path
+import tkinter as tk
 import tomllib
 
 import numpy as np
@@ -6,14 +7,76 @@ import pytest
 import yaml
 from PIL import Image
 
+import PyWALL_v13
 import sam2_segmentation
-import WALLpy_v12
+
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_main_modules_import_and_version_is_consistent():
-    assert WALLpy_v12.__version__ == "0.1.0"
-    assert callable(WALLpy_v12.main)
+    assert PyWALL_v13.__version__ == "0.13.0"
+    assert callable(PyWALL_v13.main)
     assert callable(sam2_segmentation.segment_wall_sam2)
+
+
+def test_gui_branding_and_public_segmentation_actions():
+    root = tk.Tk()
+    root.withdraw()
+    try:
+        app = PyWALL_v13.PyWALLApp(root)
+        root.update_idletasks()
+        assert root.title() == "PyWALL v13 – Segmentazione murature"
+        assert app.process_button.cget("text") == "🧮 K-Means"
+        assert app.process_sam2_button.cget("text") == "🪄 SAM 2"
+        assert not hasattr(app, "process_dl_button")
+        assert not hasattr(app, "run_dl_segmentation")
+    finally:
+        root.destroy()
+
+
+def test_png_and_dxf_exports_create_readable_files(monkeypatch, tmp_path):
+    root = tk.Tk()
+    root.withdraw()
+    errors = []
+    try:
+        app = PyWALL_v13.PyWALLApp(root)
+        mask = np.zeros((32, 32), dtype=np.uint8)
+        mask[8:24, 8:24] = PyWALL_v13.BRICK_MASK_VALUE
+        app.cleaned_mask_auto = mask
+        app.processed_pil_image = Image.new("RGB", (32, 32), "white")
+
+        monkeypatch.setattr(PyWALL_v13.messagebox, "showinfo", lambda *args, **kwargs: None)
+        monkeypatch.setattr(PyWALL_v13.messagebox, "showerror", lambda *args, **kwargs: errors.append(args))
+
+        assert app._find_and_prepare_contour_images()
+        assert app.brick_contours
+
+        dxf_path = tmp_path / "contours.dxf"
+        monkeypatch.setattr(
+            PyWALL_v13.filedialog,
+            "asksaveasfilename",
+            lambda **kwargs: str(dxf_path),
+        )
+        app._export_dxf()
+        assert dxf_path.is_file() and dxf_path.stat().st_size > 0
+        document = PyWALL_v13.ezdxf.readfile(dxf_path)
+        assert len(document.modelspace().query("LWPOLYLINE")) >= 1
+
+        png_path = tmp_path / "mask.png"
+        monkeypatch.setattr(
+            PyWALL_v13.filedialog,
+            "asksaveasfilename",
+            lambda **kwargs: str(png_path),
+        )
+        app._export_binary_mask_png()
+        with Image.open(png_path) as exported:
+            assert exported.mode == "L"
+            assert exported.size == (32, 32)
+
+        assert not errors
+    finally:
+        root.destroy()
 
 
 def test_mask_fusion_filters_candidates_by_relative_area():
@@ -35,6 +98,18 @@ def test_mask_fusion_filters_candidates_by_relative_area():
     assert np.array_equal(fused == 255, small)
 
 
+def test_official_checkpoint_discovery(tmp_path):
+    checkpoint = tmp_path / "sam2.1_hiera_base_plus.pt"
+    checkpoint.touch()
+
+    found, config = sam2_segmentation._find_official_checkpoint(
+        "base_plus", [tmp_path]
+    )
+
+    assert found == checkpoint
+    assert config == "configs/sam2.1/sam2.1_hiera_b+.yaml"
+
+
 def test_kmeans_pipeline_processes_a_small_rgb_image(tmp_path):
     image = np.zeros((24, 24, 3), dtype=np.uint8)
     image[:, :8] = (60, 55, 50)
@@ -44,7 +119,7 @@ def test_kmeans_pipeline_processes_a_small_rgb_image(tmp_path):
     Image.fromarray(image).save(image_path)
 
     original, labels, mortar_index, lab, mortar_lab, brick_lab = (
-        WALLpy_v12.process_image_initial_segmentation(image_path)
+        PyWALL_v13.process_image_initial_segmentation(image_path)
     )
 
     assert original.size == (24, 24)
@@ -65,41 +140,66 @@ def test_sam_input_validation_does_not_load_a_model():
         )
 
 
-def test_legacy_root_can_be_configured(monkeypatch, tmp_path):
-    (tmp_path / "pred.py").write_text("# test marker\n", encoding="utf-8")
-    monkeypatch.setenv("WALLPY_LEGACY_ROOT", str(tmp_path))
+def test_local_samples_are_readable_when_present():
+    samples = ROOT / "samples"
+    if not samples.is_dir():
+        pytest.skip("Local test samples are not included in this checkout")
 
-    assert WALLpy_v12._find_project_root() == tmp_path.resolve()
+    files = sorted(path for path in samples.iterdir() if path.suffix.lower() in {".jpg", ".jpeg", ".png"})
+    if not files:
+        pytest.skip("No local test photographs are present in this checkout")
+    for path in files:
+        with Image.open(path) as image:
+            rgb = image.convert("RGB")
+            assert rgb.width > 0 and rgb.height > 0
+
+
+def test_public_runtime_has_no_legacy_dl_or_ultralytics_backend():
+    main_source = (ROOT / "PyWALL_v13.py").read_text(encoding="utf-8")
+    sam_source = (ROOT / "sam2_segmentation.py").read_text(encoding="utf-8")
+    pyproject_source = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+
+    for forbidden in (
+        "run_dl_segmentation",
+        "process_dl_button",
+        "WALLPY_LEGACY_ROOT",
+        "model-12000",
+        "pred.py",
+    ):
+        assert forbidden not in main_source
+
+    assert "ultralytics" not in sam_source.lower()
+    assert "ultralytics" not in pyproject_source.lower()
 
 
 def test_readme_relative_links_resolve():
-    root = Path(__file__).resolve().parents[1]
     expected = [
-        "docs/assets/wallpy-interface.png",
+        "README_PyWALL_v13.md",
         "checkpoints/README.md",
-        "docs/legacy-deep-learning.md",
+        "samples/README.md",
         "CITATION.cff",
         "THIRD_PARTY_NOTICES.md",
         "LICENSE",
         "NOTICE",
     ]
 
-    readme = (root / "README.md").read_text(encoding="utf-8")
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
     for relative_path in expected:
         assert f"]({relative_path})" in readme
-        assert (root / relative_path).is_file(), relative_path
+        assert (ROOT / relative_path).is_file(), relative_path
 
 
 def test_project_configuration_files_parse():
-    root = Path(__file__).resolve().parents[1]
-    pyproject = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))
-    citation = yaml.safe_load((root / "CITATION.cff").read_text(encoding="utf-8"))
+    pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    citation = yaml.safe_load((ROOT / "CITATION.cff").read_text(encoding="utf-8"))
     workflow = yaml.safe_load(
-        (root / ".github" / "workflows" / "tests.yml").read_text(encoding="utf-8")
+        (ROOT / ".github" / "workflows" / "tests.yml").read_text(encoding="utf-8")
     )
 
-    assert pyproject["project"]["version"] == WALLpy_v12.__version__
+    assert pyproject["project"]["name"] == "pywall"
+    assert pyproject["project"]["version"] == PyWALL_v13.__version__
     assert pyproject["project"]["license"] == "Apache-2.0"
+    assert pyproject["project"]["scripts"]["pywall"] == "PyWALL_v13:main"
     assert citation["cff-version"] == "1.2.0"
     assert citation["license"] == "Apache-2.0"
     assert workflow["jobs"]["test"]["runs-on"] == "windows-latest"
